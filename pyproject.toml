@@ -10,7 +10,6 @@ url="https://github.com/jongablop/ft4ftir",
 requires-python = ">=3.7"
 dependencies = [
     "numpy>=1.21.0",
-    "pandas>=1.3.0",
     "brukeropusreader>=1.3.0"
     ]
 license = "GPL-3.0-or-later"
@@ -18,3 +17,6 @@ license = "GPL-3.0-or-later"
 [build-system]
 requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
+
+[project.optional-dependencies]
+examples="pandas>=1.3.0"
