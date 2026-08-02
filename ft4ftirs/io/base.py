@@ -13,8 +13,8 @@ class SpectrometerReader(ABC):
     Abstract base class for instrument file readers.
 
     Subclasses parse a vendor-specific binary or text format and return
-    a standardised :class:`~ftirpy.data.interferogram.Interferogram`
-    together with the instrument-recommended :class:`~ftirpy.processing.apodization.Apodizer`.
+    a standardised :class:`~ft4ftirs.data.interferogram.Interferogram`
+    together with the instrument-recommended :class:`~ft4ftirs.processing.apodization.Apodizer`.
 
     Implement :meth:`load` to support a new instrument format.
     """
@@ -32,16 +32,16 @@ class SpectrometerReader(ABC):
         Returns
         -------
         dict with keys:
-            ``"interferogram"`` : :class:`~ftirpy.data.interferogram.Interferogram`
+            ``"interferogram"`` : :class:`~ft4ftirs.data.interferogram.Interferogram`
                 Raw interferogram data and laser metadata.
-            ``"apodizer"`` : :class:`~ftirpy.processing.apodization.Apodizer`
+            ``"apodizer"`` : :class:`~ft4ftirs.processing.apodization.Apodizer`
                 Apodizer configured with the instrument-recommended window.
             ``"signal_gain"`` : float
                 Detector gain reported by the instrument.
             ``"wn_min"`` : float or None
                 Low-frequency cut-off in cm⁻¹ (OPUS ``HFQ`` parameter).
                 Stored in ``interferogram.metadata`` and used by
-                :class:`~ftirpy.processing.pipeline.SpectralPipeline` to
+                :class:`~ft4ftirs.processing.pipeline.SpectralPipeline` to
                 automatically trim the output spectrum.
             ``"wn_max"`` : float or None
                 High-frequency cut-off in cm⁻¹ (OPUS ``LFQ`` parameter).

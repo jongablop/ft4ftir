@@ -24,11 +24,11 @@ class SpectralPipeline:
        ``laser_wavenumber`` is the *effective sampling wavenumber*, which
        equals the HeNe laser frequency for standard (full-fringe) instruments
        and ``2 × HeNe`` for half-fringe instruments (Nyquist = HeNe).
-       The :class:`~ftirpy.io.bruker_opus.BrukerOpusReader` sets this
+       The :class:`~ft4ftirs.io.bruker_opus.BrukerOpusReader` sets this
        automatically from the file parameters.
     5. Spectrum recovery — magnitude ``|FFT[k]|`` by default (robust,
        no phase estimation required).  Pass a
-       :class:`~ftirpy.processing.phase_correction.PhaseCorrector` for
+       :class:`~ft4ftirs.processing.phase_correction.PhaseCorrector` for
        Mertz or Savitzky-Golay phase correction.
 
     Parameters

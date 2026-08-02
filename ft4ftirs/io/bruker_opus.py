@@ -12,7 +12,7 @@ from ft4ftirs.processing.apodization import Apodizer, get_window
 from ft4ftirs.processing.phase_correction import MertzPhaseCorrector
 from ft4ftirs.processing.scan_averaging import average_forward_backward
 
-# Mapping from Bruker APF codes to ftirpy window names
+# Mapping from Bruker APF codes to ft4ftirs window names
 _BRUKER_APF_MAP: dict[str, str] = {
     "B3": "BlackmanHarris3Term",
     "B4": "BlackmanHarris4Term",
@@ -43,8 +43,8 @@ class BrukerOpusReader(SpectrometerReader):
 
     Extracts the single-channel interferogram (``IgSm`` block), applies the
     instrument scaling factor (``CSF``), and reads the acquisition parameters
-    needed to construct an :class:`~ftirpy.data.interferogram.Interferogram`
-    and the matching :class:`~ftirpy.processing.apodization.Apodizer`.
+    needed to construct an :class:`~ft4ftirs.data.interferogram.Interferogram`
+    and the matching :class:`~ft4ftirs.processing.apodization.Apodizer`.
 
     Parameters
     ----------
@@ -70,7 +70,7 @@ class BrukerOpusReader(SpectrometerReader):
         dict
             Keys: ``"interferogram"``, ``"apodizer"``, ``"signal_gain"``,
             ``"phase_corrector"``.
-            ``"phase_corrector"`` is a :class:`~ftirpy.processing.phase_correction.MertzPhaseCorrector`
+            ``"phase_corrector"`` is a :class:`~ft4ftirs.processing.phase_correction.MertzPhaseCorrector`
             configured from the file's ``PHR`` parameter when available, otherwise
             using the fractional fallback.
         """
@@ -119,25 +119,6 @@ class BrukerOpusReader(SpectrometerReader):
         wn_min: Optional[float] = float(hfq_raw) if hfq_raw is not None else None
         wn_max: Optional[float] = float(lfq_raw) if lfq_raw is not None else None
 
-        # --- Detect sampling convention (full-fringe vs half-fringe) ---
-        # Bruker instruments may sample at every HeNe half-wavelength (half-fringe),
-        # giving dx = 1/(2·HFL) and Nyquist = HFL.  The effective sampling wavenumber
-        # that drives the wavenumber axis (k · laser_wn / N_fft) must equal
-        # 2·HFL in that case.  We detect it by comparing the declared spectral
-        # resolution (RES) with both candidates.
-        acq_params = opus.get("Acquisition", {})
-        declared_res: float = float(acq_params.get("RES", 0.0))
-        """
-        n_igram = len(scaled) // 2 if raw_aqm == "DD" else len(scaled)
-        raw_zpd = int(np.argmax(np.abs(scaled[:n_igram] - np.mean(scaled[:n_igram]))))
-        n_one_sided = max(raw_zpd, n_igram - raw_zpd - 1)
-        if declared_res > 0 and n_one_sided > 0:
-            res_full = hfl / n_one_sided
-            res_half = 2.0 * hfl / n_one_sided
-            laser_wn = (2.0 * hfl) if abs(res_half - declared_res) < abs(res_full - declared_res) else hfl
-        else:
-            laser_wn = hfl  # fall back to full-fringe
-        """
         laser_wn = hfl
         base_metadata = {
             "source_file": str(path),

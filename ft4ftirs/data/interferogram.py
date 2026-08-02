@@ -39,8 +39,8 @@ class Interferogram:
         records it; defaults to ``ScanDirection.UNKNOWN``.
     zpd_finder : ZpdFinder, optional
         Strategy used to locate the centerburst.  Defaults to
-        :class:`~ftirpy.processing.zpd.ArgmaxZpdFinder`.  Pass a different
-        finder (e.g. :class:`~ftirpy.processing.zpd.ParabolicZpdFinder`) for
+        :class:`~ft4ftirs.processing.zpd.ArgmaxZpdFinder`.  Pass a different
+        finder (e.g. :class:`~ft4ftirs.processing.zpd.ParabolicZpdFinder`) for
         sub-sample ZPD accuracy.
     metadata : dict, optional
         Instrument parameters (scanner velocity, resolution setting, gain, etc.)
@@ -98,9 +98,9 @@ class Interferogram:
         Centerburst position in fractional sample units.
 
         Computed by :attr:`zpd_finder`; may be non-integer for sub-sample
-        finders (:class:`~ftirpy.processing.zpd.ParabolicZpdFinder`,
-        :class:`~ftirpy.processing.zpd.CentroidZpdFinder`,
-        :class:`~ftirpy.processing.zpd.GaussianZpdFinder`).
+        finders (:class:`~ft4ftirs.processing.zpd.ParabolicZpdFinder`,
+        :class:`~ft4ftirs.processing.zpd.CentroidZpdFinder`,
+        :class:`~ft4ftirs.processing.zpd.GaussianZpdFinder`).
         """
         return self.zpd_finder(self.signal)
 

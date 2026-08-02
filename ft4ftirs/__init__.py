@@ -1,12 +1,12 @@
 """
-ftirpy
+ft4ftirs
 ===========
 FTIR interferogram-to-spectrum processing pipeline.
 
 Quick start
 -----------
->>> from ftirpy.io.bruker_opus import BrukerOpusReader
->>> from ftirpy.processing.pipeline import SpectralPipeline
+>>> from ft4ftirs.io.bruker_opus import BrukerOpusReader
+>>> from ft4ftirs.processing.pipeline import SpectralPipeline
 >>>
 >>> reader = BrukerOpusReader()
 >>> data = reader.load("sample.0")

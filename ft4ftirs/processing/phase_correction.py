@@ -5,7 +5,6 @@ from typing import Optional
 
 import numpy as np
 from scipy.signal import savgol_filter
-import matplotlib.pyplot as plt
 
 # ===========================================================================
 # Abstract base

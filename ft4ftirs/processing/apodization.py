@@ -302,7 +302,7 @@ class Apodizer:
     zpd_finder : ZpdFinder, optional
         Strategy for locating the ZPD when no ``zpd_index`` is supplied to
         :meth:`__call__`.  Defaults to
-        :class:`~ftirpy.processing.zpd.ArgmaxZpdFinder`.
+        :class:`~ft4ftirs.processing.zpd.ArgmaxZpdFinder`.
     """
 
     def __init__(
@@ -333,7 +333,7 @@ class Apodizer:
         zpd_index : int, optional
             Pre-computed centerburst index.  When supplied, skips the
             internal :attr:`zpd_finder` call — useful when the caller
-            already has the ZPD (e.g. :class:`~ftirpy.processing.pipeline.SpectralPipeline`)
+            already has the ZPD (e.g. :class:`~ft4ftirs.processing.pipeline.SpectralPipeline`)
             to avoid computing it twice.
 
         Returns

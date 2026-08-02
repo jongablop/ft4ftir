@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="ft4ftirs",
-    version="0.1.0",
+    version="1.0.0",
     author="Jon Gabirondo-López",
     author_email="jon.gabirondol@ehu.eus",
     description="A package for processing FTIR interferograms.",
@@ -14,6 +14,7 @@ setup(
     install_requires=[
         "numpy>=1.21.0",
         "pandas>=1.3.0",
+        "scipy>=1.7.0",
         "brukeropusreader>=1.3.0"
     ],
     classifiers=[
