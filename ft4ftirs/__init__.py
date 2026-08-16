@@ -52,7 +52,7 @@ from ft4ftirs.analysis.metrics import (
     peak_to_peak_noise,
 )
 
-__version__ = "0.1.0"
+__version__ = "1.0.0"
 __all__ = [
     # data
     "Interferogram",
