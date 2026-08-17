@@ -7,8 +7,8 @@ import numpy as np
 from ft4ftirs.data.interferogram import Interferogram
 from ft4ftirs.data.spectrum import Spectrum, SpectralQuantity
 from ft4ftirs.processing.apodization import Apodizer
-from ft4ftirs.processing.phase_correction import PhaseCorrector, MertzPhaseCorrector
-from ft4ftirs.processing.zero_filling import zero_fill, next_power_of_two
+from ft4ftirs.processing.phase_correction import PhaseCorrector
+from ft4ftirs.processing.zero_filling import next_power_of_two
 
 
 class SpectralPipeline:
@@ -20,12 +20,11 @@ class SpectralPipeline:
     1. Apodization — ZPD-centred window to suppress Gibbs oscillations.
     2. Zero-filling — roll ZPD to index 0, pad to next power-of-two.
     3. FFT — numpy.fft.fft on the padded signal.
-    4. Wavenumber axis — ``k · laser_wavenumber / N_fft``.
-       ``laser_wavenumber`` is the *effective sampling wavenumber*, which
-       equals the HeNe laser frequency for standard (full-fringe) instruments
-       and ``2 × HeNe`` for half-fringe instruments (Nyquist = HeNe).
-       The :class:`~ft4ftirs.io.bruker_opus.BrukerOpusReader` sets this
-       automatically from the file parameters.
+    4. Wavenumber axis — ``k · 2 · laser_wavenumber / N_fft``.
+       ``laser_wavenumber`` is the HeNe reference frequency.  The interferogram
+       is sampled at every HeNe zero crossing, i.e. every ``λ_HeNe / 2`` of
+       optical path difference, so ``dx = 1 / (2 · laser_wavenumber)`` and the
+       folding (Nyquist) wavenumber is ``laser_wavenumber`` itself.
     5. Spectrum recovery — magnitude ``|FFT[k]|`` by default (robust,
        no phase estimation required).  Pass a
        :class:`~ft4ftirs.processing.phase_correction.PhaseCorrector` for
@@ -37,7 +36,15 @@ class SpectralPipeline:
     phase_corrector : PhaseCorrector, optional
         When ``None`` (default) the spectrum is taken as ``|FFT[k]|``.
     zero_filling_factor : int, default 1
-        Multiplier applied before rounding up to the next power of two.
+        Number of spectral points per resolution element, following Bruker's
+        ``ZFF`` convention: the resolution element is set by the maximum
+        retardation — the longer *wing* of the interferogram — so the factor
+        multiplies that wing, not the full double-sided record, before rounding
+        up to the next power of two.  The transform is never made smaller than
+        ``next_power_of_two(len(signal))``, so no acquired sample is ever
+        discarded; for a double-sided interferogram this means factors 1 and 2
+        coincide (the full record already carries two points per resolution
+        element).
     """
 
     def __init__(
@@ -63,8 +70,17 @@ class SpectralPipeline:
         apodized = self.apodizer(interferogram.signal, zpd_index=zpd)
 
         # 3. The Standard FTIR Center-Padding Workflow:
+        # `n` is the number of acquired samples and drives the padding below; the
+        # zero-filling factor is counted from a different length. Bruker's ZFF is
+        # spectral points per resolution element, and the resolution element is set
+        # by the maximum retardation -- the longer wing of the interferogram -- so
+        # the factor multiplies the wing, not the whole double-sided record.
         n = len(apodized)
-        fft_size = int(2 ** np.ceil(np.log2(n * self.zero_filling_factor)))
+        wing = max(zpd, n - 1 - zpd)
+        fft_size = max(
+            next_power_of_two(n),  # never discard acquired samples
+            next_power_of_two(wing * self.zero_filling_factor),
+        )
 
         # Step A: Pad the centered, apodized data with zeros evenly on both sides
         # This keeps the ZPD dead-center and allows the wings to decay smoothly.
