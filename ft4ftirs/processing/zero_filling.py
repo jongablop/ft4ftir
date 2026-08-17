@@ -22,20 +22,27 @@ def next_power_of_two(n: int) -> int:
     return int(2 ** np.ceil(np.log2(n)))
 
 
-def get_next_power_of_two(self, n):
-    return int(2 ** np.ceil(np.log2(n)))
-
-
 def zero_fill(
     signal: np.ndarray, zpd_index: int, zero_filling_factor: int = 1
 ) -> np.ndarray:
     """
     Symmetrically zero-pads an interferogram by inserting zeros in the middle,
     leaving the ZPD at its original index position.
+
+    ``zero_filling_factor`` follows Bruker's ``ZFF`` convention: it is the
+    number of spectral points per resolution element, and the resolution
+    element is set by the maximum retardation — the longer wing of the
+    interferogram — so the factor multiplies that wing rather than the full
+    record.  The result is never shorter than ``next_power_of_two(len(signal))``,
+    so no acquired sample is discarded.
     """
     signal = np.asarray(signal, dtype=float)
     n = len(signal)
-    target = int(2 ** np.ceil(np.log2(n * zero_filling_factor)))
+    wing = max(zpd_index, n - 1 - zpd_index)
+    target = max(
+        next_power_of_two(n),
+        next_power_of_two(wing * zero_filling_factor),
+    )
 
     if target == n:
         return signal
