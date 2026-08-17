@@ -10,8 +10,11 @@ Quick start
 >>>
 >>> reader = BrukerOpusReader()
 >>> data = reader.load("sample.0")
->>> pipeline = SpectralPipeline(data["apodizer"])
->>> spectrum = pipeline(data["interferogram"])
+>>> pipeline = SpectralPipeline(
+...     data["apodizer"], data["phase_corrector"], data["zero_filling_factor"]
+... )
+>>> # Transform each scan direction separately, then average the spectra.
+>>> spectrum = average_spectra([pipeline(ig) for ig in data["interferograms"]])
 """
 
 from ft4ftirs.data.interferogram import Interferogram, ScanDirection
@@ -35,7 +38,10 @@ from ft4ftirs.processing.phase_correction import (
     SavitzkyGolayPhaseCorrector,
 )
 from ft4ftirs.processing.pipeline import SpectralPipeline
-from ft4ftirs.processing.scan_averaging import average_forward_backward
+from ft4ftirs.processing.scan_averaging import (
+    average_spectra,
+    average_forward_backward,
+)
 from ft4ftirs.processing.zpd import (
     ZpdFinder,
     MinMaxZpdFinder,
@@ -44,12 +50,18 @@ from ft4ftirs.processing.zpd import (
     CentroidZpdFinder,
     GaussianZpdFinder,
 )
-from ft4ftirs.analysis.conversion import to_transmittance, to_absorbance, to_reflectance
+from ft4ftirs.analysis.conversion import (
+    to_transmittance,
+    to_absorbance,
+    to_reflectance,
+    to_absorbance_reflectance,
+)
 from ft4ftirs.analysis.metrics import (
     spectral_resolution,
     snr,
     rms_noise,
     peak_to_peak_noise,
+    centerburst_quality,
 )
 
 __version__ = "1.0.0"
@@ -75,6 +87,7 @@ __all__ = [
     "MertzPhaseCorrector",
     "SavitzkyGolayPhaseCorrector",
     "SpectralPipeline",
+    "average_spectra",
     "average_forward_backward",
     # ZPD finders
     "ZpdFinder",
@@ -87,8 +100,10 @@ __all__ = [
     "to_transmittance",
     "to_absorbance",
     "to_reflectance",
+    "to_absorbance_reflectance",
     "spectral_resolution",
     "snr",
     "rms_noise",
     "peak_to_peak_noise",
+    "centerburst_quality",
 ]
