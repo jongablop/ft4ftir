@@ -30,7 +30,10 @@ class Interferogram:
         Raw interferogram intensities (detector counts, scaled by CSF).
     laser_wavenumber : float
         HeNe reference laser wavenumber in cm⁻¹ (typically ~15798 cm⁻¹).
-        Determines the OPD sampling step: dx = 1 / laser_wavenumber.
+        The interferogram is sampled at every HeNe zero crossing, i.e. every
+        ``λ_HeNe / 2`` of optical path difference, so the OPD sampling step is
+        ``dx = 1 / (2 · laser_wavenumber)`` and the folding (Nyquist)
+        wavenumber is ``laser_wavenumber`` itself.
     x_index : np.ndarray, optional
         Digitizer sample indices from the instrument. Inferred as
         ``np.arange(len(signal))`` when not provided.
@@ -72,7 +75,7 @@ class Interferogram:
         if len(self.x_index) != len(self.signal):
             raise ValueError("x_index and signal must have the same length.")
         if self.zpd_finder is None:
-            from ft4ftirs.processing.zpd import MinMaxZpdFinder, ArgmaxZpdFinder
+            from ft4ftirs.processing.zpd import ArgmaxZpdFinder
 
             self.zpd_finder = ArgmaxZpdFinder()
 
@@ -89,8 +92,8 @@ class Interferogram:
 
     @property
     def dx(self) -> float:
-        """OPD sampling step in cm (= 1 / laser_wavenumber)."""
-        return 1.0 / self.laser_wavenumber
+        """OPD sampling step in cm (= 1 / (2.0 * laser_wavenumber))."""
+        return 1.0 / (2.0 * self.laser_wavenumber)
 
     @property
     def zpd_position(self) -> float:
