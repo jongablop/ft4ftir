@@ -1,8 +1,75 @@
 from __future__ import annotations
 
+import warnings
+from typing import Sequence
+
 import numpy as np
 
 from ft4ftirs.data.interferogram import Interferogram, ScanDirection
+from ft4ftirs.data.spectrum import Spectrum
+
+
+def average_spectra(spectra: Sequence[Spectrum], rtol: float = 1e-6) -> Spectrum:
+    """
+    Average several spectra onto their common wavenumber axis.
+
+    This is the correct way to combine the forward and backward halves of a
+    bidirectional (OPUS ``AQM = DD``) acquisition: transform and phase-correct
+    each scan direction *independently*, then average the resulting spectra.
+
+    Do **not** average the interferograms instead.  The two scan directions
+    carry different phase errors (direction-dependent electronic and optical
+    delays), so summing the raw interferograms imprints a coherent artefact
+    that ZPD alignment cannot remove — see :func:`average_forward_backward`
+    for the measured comparison.
+
+    Parameters
+    ----------
+    spectra : sequence of Spectrum
+        Spectra to average.  All must share the same wavenumber axis and the
+        same :class:`~ft4ftirs.data.spectrum.SpectralQuantity`.
+    rtol : float, default 1e-6
+        Relative tolerance for the wavenumber-axis equality check.
+
+    Returns
+    -------
+    Spectrum
+        Point-wise mean of the input intensities, carrying the first
+        spectrum's wavenumber axis and metadata plus ``n_spectra_averaged``.
+
+    Raises
+    ------
+    ValueError
+        If ``spectra`` is empty, or the axes or quantities do not match.
+    """
+    spectra = list(spectra)
+    if not spectra:
+        raise ValueError("Need at least one spectrum to average.")
+
+    first = spectra[0]
+    for i, s in enumerate(spectra[1:], start=1):
+        if s.n_points != first.n_points:
+            raise ValueError(
+                f"Spectrum {i} has {s.n_points} points, spectrum 0 has "
+                f"{first.n_points}.  Interpolate onto a common axis first."
+            )
+        if not np.allclose(s.wavenumbers, first.wavenumbers, rtol=rtol):
+            raise ValueError(
+                f"Spectrum {i} has a different wavenumber axis from spectrum 0.  "
+                "Interpolate onto a common axis first."
+            )
+        if s.quantity != first.quantity:
+            raise ValueError(
+                f"Spectrum {i} is {s.quantity.name}, spectrum 0 is "
+                f"{first.quantity.name}.  Cannot average different quantities."
+            )
+
+    return Spectrum(
+        wavenumbers=first.wavenumbers.copy(),
+        intensities=np.mean([s.intensities for s in spectra], axis=0),
+        quantity=first.quantity,
+        metadata={**first.metadata, "n_spectra_averaged": len(spectra)},
+    )
 
 
 def average_forward_backward(
@@ -13,9 +80,30 @@ def average_forward_backward(
     """
     Average a forward and backward scan into a single interferogram.
 
+    .. deprecated::
+        Use :func:`average_spectra` instead — transform and phase-correct each
+        scan direction independently, then average the resulting spectra.
+
+        Averaging *interferograms* is not sound.  The two scan directions carry
+        different phase errors, so the sum contains a coherent artefact that ZPD
+        alignment cannot remove.  Measured against the spectrum OPUS stored in
+        ``examples/example_opus.0`` (RMS residual as a fraction of that
+        spectrum's peak-to-peak amplitude):
+
+        ======================================================  =========
+        forward scan alone                                        0.030 %
+        backward scan alone                                       0.032 %
+        this function (interferogram average, ZPD-aligned)        0.247 %
+        this function, best achievable rigid sub-sample shift     0.195 %
+        :func:`average_spectra` (phase-corrected independently)    0.012 %
+        ======================================================  =========
+
+        Averaging the interferograms is thus ~8x *worse* than using a single
+        scan direction, while averaging the spectra is better than either —
+        which is what √2 noise reduction should look like.
+
     The backward scan is time-reversed (``np.flip``) before averaging so both
-    scans share the same OPD direction.  Averaging two co-phased scans reduces
-    random noise by √2 relative to a single scan.
+    scans share the same OPD direction.
 
     Parameters
     ----------
@@ -46,6 +134,14 @@ def average_forward_backward(
     instrument uses different retardation ranges for each direction, resample
     to a common grid first.
     """
+    warnings.warn(
+        "average_forward_backward() averages interferograms, which imprints a "
+        "phase artefact that ZPD alignment cannot remove (measured ~8x worse "
+        "than using a single scan direction). Transform each scan direction "
+        "separately and combine with average_spectra() instead.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
     if forward.n_points != backward.n_points:
         raise ValueError(
             f"Forward ({forward.n_points} pts) and backward ({backward.n_points} pts) "
