@@ -17,16 +17,24 @@ pip install ft4ftirs
 ```python
 from ft4ftirs.io.bruker_opus import BrukerOpusReader
 from ft4ftirs.processing.pipeline import SpectralPipeline
+from ft4ftirs.processing.scan_averaging import average_spectra
 
-# Load an interferogram plus the instrument-recommended apodizer and
-# phase corrector from a Bruker OPUS file.
+# Load the interferogram(s) plus the instrument-recommended apodizer, phase
+# corrector and zero-filling factor from a Bruker OPUS file.
 reader = BrukerOpusReader()
 data = reader.load("sample.0")
 
 # Run the interferogram -> single-beam spectrum pipeline (apodization,
-# zero-filling, FFT and phase correction).
-pipeline = SpectralPipeline(data["apodizer"], data["phase_corrector"])
-spectrum = pipeline(data["interferogram"])
+# zero-filling, FFT and phase correction).  Passing the file's zero-filling
+# factor reproduces the spectral point spacing OPUS produced.
+pipeline = SpectralPipeline(
+    data["apodizer"], data["phase_corrector"], data["zero_filling_factor"]
+)
+
+# A bidirectional file holds a forward and a backward scan.  They carry
+# different phase errors, so transform each one separately and average the
+# resulting *spectra* -- never the interferograms.
+spectrum = average_spectra([pipeline(ig) for ig in data["interferograms"]])
 
 print(spectrum.wavenumbers, spectrum.intensities)
 ```
