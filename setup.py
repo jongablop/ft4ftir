@@ -18,6 +18,11 @@ setup(
         "scipy>=1.7.0",
         "brukeropusreader>=1.3.0"
     ],
+    extras_require={
+        # FER export/import (ft4ftirs.io.fer) is optional; the rest of the
+        # package does not import ferpy.
+        "fer": ["ferpy"],
+    },
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
