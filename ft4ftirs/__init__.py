@@ -17,6 +17,16 @@ Quick start
 >>> spectrum = average_spectra([pipeline(ig) for ig in data["interferograms"]])
 """
 
+from importlib.metadata import PackageNotFoundError, version
+
+try:
+    # The version is derived from the git tag at build time by
+    # setuptools-scm and read back here from the installed metadata,
+    # so there is no version literal anywhere in the source tree.
+    __version__ = version("ft4ftirs")
+except PackageNotFoundError:  # not installed (e.g. run from a source tree)
+    __version__ = "0.0.0+unknown"
+
 from ft4ftirs.data.interferogram import Interferogram, ScanDirection
 from ft4ftirs.data.spectrum import Spectrum, SpectralQuantity
 from ft4ftirs.processing.apodization import (
@@ -64,8 +74,8 @@ from ft4ftirs.analysis.metrics import (
     centerburst_quality,
 )
 
-__version__ = "1.0.0"
 __all__ = [
+    "__version__",
     # data
     "Interferogram",
     "ScanDirection",

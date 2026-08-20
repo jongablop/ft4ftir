@@ -11,8 +11,10 @@ from ft4ftirs.io.base import SpectrometerReader
 from ft4ftirs.processing.apodization import Apodizer
 from ft4ftirs.processing.phase_correction import MertzPhaseCorrector
 
-# Mapping from Bruker APF codes to ft4ftirs window names
-_BRUKER_APF_MAP: dict[str, str] = {
+# Mapping from Bruker APF codes to ft4ftirs window names.
+# Public API: downstream code may read this to translate OPUS apodization
+# codes without reimplementing the table.
+BRUKER_APF_MAP: dict[str, str] = {
     "B3": "BlackmanHarris3Term",
     "B4": "BlackmanHarris4Term",
     "BX": "Boxcar",
@@ -22,6 +24,11 @@ _BRUKER_APF_MAP: dict[str, str] = {
     "NM": "NortonBeerMedium",
     "NS": "NortonBeerStrong",
 }
+
+
+#: Deprecated private alias for :data:`BRUKER_APF_MAP`, kept so existing
+#: importers keep working.  Use the public name in new code.
+_BRUKER_APF_MAP = BRUKER_APF_MAP
 
 _DEFAULT_WINDOW = "BlackmanHarris3Term"
 
@@ -120,7 +127,7 @@ class BrukerOpusReader(SpectrometerReader):
         # --- Fourier transformation parameters ---
         ft_params = opus.get("Fourier Transformation", {})
         apf_code: str = ft_params.get("APF", "B3")
-        window_name = _BRUKER_APF_MAP.get(apf_code, _DEFAULT_WINDOW)
+        window_name = BRUKER_APF_MAP.get(apf_code, _DEFAULT_WINDOW)
         phr_raw = ft_params.get("PHR")
         phase_resolution_cm: Optional[float] = (
             float(phr_raw) if phr_raw is not None else None

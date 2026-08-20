@@ -1,0 +1,9 @@
+# setuptools-scm adds every git-tracked file to the sdist by default.
+# Keep the examples (notebooks, CSVs and the binary OPUS file) out of it;
+# they are never needed to build or use the package.
+prune examples
+exclude requirements.txt
+
+include README.md
+include LICENSE
+include CONTRIBUTING.md
