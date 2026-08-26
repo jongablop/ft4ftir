@@ -1,6 +1,8 @@
 # FT4FTIRS
 
-FT4FTIRS (Fourier Tranform for Fourier Transform Infrared Spectroscopy) is a Python package for processing interferograms from FTIR (Fourier Transform Infrared Spectroscopy) data. 
+[![DOI](https://zenodo.org/badge/850231920.svg)](https://doi.org/10.5281/zenodo.22115963)
+
+FT4FTIRS (Fourier Tranform for Fourier Transform Infrared Spectrometers) is a Python package for processing interferograms from FTIR (Fourier Transform Infrared Spectroscopy) data. 
 It supports reading Bruker OPUS files, processing interferograms (apodization, zero-filling, Fourier transform), 
 and extracting spectra for further analysis.
 
